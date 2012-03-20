@@ -43,7 +43,15 @@ class PollsController extends PollsAppController {
 		if (!$this->Poll->exists()) {
 			throw new NotFoundException(__('Invalid poll'));
 		}
-		$this->set('poll', $this->Poll->read(null, $id));
+		$poll = $this->Poll->find('first', array(
+			'conditions' => array(
+				'Poll.id' => $id,
+				),
+			'contain' => array(
+				'PollOption',
+				),
+			));
+		$this->set(compact('poll'));
 	}
 
 /**

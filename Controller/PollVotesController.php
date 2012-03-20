@@ -51,20 +51,55 @@ class PollVotesController extends PollsAppController {
  *
  * @return void
  */
-	public function add() {
+	public function add($id = null) {
+		$this->PollVote->Poll->id = $id;
+		if (!$this->PollVote->Poll->exists()) {
+			throw new NotFoundException(__('Invalid poll'));
+		}
+		
 		if ($this->request->is('post')) {
-			$this->PollVote->create();
-			if ($this->PollVote->save($this->request->data)) {
+			try {			
+				$this->PollVote->create();
+				$this->PollVote->add($this->request->data);
 				$this->Session->setFlash(__('The poll vote has been saved'));
 				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(__('The poll vote could not be saved. Please, try again.'));
+			} catch (Exception $e) {
+				$this->Session->setFlash($e->getMessage());
 			}
 		}
-		$polls = $this->PollVote->Poll->find('list');
-		$pollOptions = $this->PollVote->PollOption->find('list');
-		$users = $this->PollVote->User->find('list');
-		$this->set(compact('polls', 'pollOptions', 'users'));
+		if (CakeSession::read('Auth.User.id') != '') {
+			$votes = $this->PollVote->find('count', array(
+				'conditions' => array(
+					'PollVote.user_id' => CakeSession::read('Auth.User.id'),
+					'PollVote.poll_id' => $id,
+					),
+				));
+		} else {
+			$votes = null;
+		}
+		
+		if (!empty($votes)) {
+			$votes = $this->PollVote->PollOption->find('all', array(
+				'conditions' => array(
+					'PollOption.poll_id' => $id,
+					),
+				));
+			$voteTotal = array_sum(Set::extract('/PollOption/vote_count', $votes));
+			$this->set(compact('votes', 'voteTotal'));
+		}
+		
+		$poll = $this->PollVote->Poll->find('first', array(
+			'conditions' => array(
+				'Poll.id' => $id,
+				),
+			));
+		$pollOptions = $this->PollVote->PollOption->find('list', array(
+			'conditions' => array(
+				'PollOption.poll_id' => $id,
+				),
+			));
+		$user = CakeSession::read('Auth.User.id');
+		$this->set(compact('poll', 'user', 'pollOptions'));
 	}
 
 /**

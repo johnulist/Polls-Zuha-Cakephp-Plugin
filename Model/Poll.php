@@ -50,7 +50,7 @@ class Poll extends PollsAppModel {
 			'offset' => '',
 			'exclusive' => '',
 			'finderQuery' => '',
-			'counterQuery' => ''
+			'counterQuery' => 'vote_count'
 		),
 		'PollVote' => array(
 			'className' => 'PollVote',
