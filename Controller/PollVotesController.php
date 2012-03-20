@@ -62,7 +62,6 @@ class PollVotesController extends PollsAppController {
 				$this->PollVote->create();
 				$this->PollVote->add($this->request->data);
 				$this->Session->setFlash(__('The poll vote has been saved'));
-				$this->redirect(array('action' => 'index'));
 			} catch (Exception $e) {
 				$this->Session->setFlash($e->getMessage());
 			}

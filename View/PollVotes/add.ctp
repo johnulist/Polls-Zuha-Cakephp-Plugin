@@ -1,4 +1,6 @@
 <div class="pollVotes form">
+	<h2><?php echo $poll['Poll']['question']; ?></h2>
+    <p><?php echo $poll['Poll']['description']; ?></p>
 <?php
 if (!empty($votes)) {
 	foreach ($votes as $vote) { ?>
@@ -9,16 +11,15 @@ if (!empty($votes)) {
 } else {
 	echo $this->Form->create('PollVote');?>
 	<fieldset>
-		<legend><?php echo $poll['Poll']['question']; ?></legend>
-        <p><?php echo $poll['Poll']['description']; ?></p>
-		<?php
+	<?php
 		echo $this->Form->input('PollVote.poll_id', array('type' => 'hidden', 'value' => $poll['Poll']['id']));
 		echo $this->Form->input('PollVote.poll_option_id', array('type' => 'radio', 'legend' => false));
 		echo $this->Form->input('PollVote.user_id', array('type' => 'hidden', 'value' => $user));
 		echo $this->Form->input('PollOption.option', array('label' => 'Add Option'));
 		echo $this->Form->input('PollOption.poll_id', array('type' => 'hidden', 'value' => $poll['Poll']['id'])); ?>
 	</fieldset>
-<?php echo $this->Form->end(__('Vote')); 
+<?php 
+	echo $this->Form->end(__('Vote')); 
 } ?>
 </div>
 <?php  /*
