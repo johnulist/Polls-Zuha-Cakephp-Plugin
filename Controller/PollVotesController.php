@@ -21,6 +21,12 @@ class PollVotesController extends PollsAppController {
  */
 	public $uses = 'Polls.PollVote';
 
+/** 
+ * Allowed actions
+ * 
+ * @var array
+ */
+	public $allowedActions = array('vote', 'results');
 
 /**
  * index method
@@ -45,6 +51,49 @@ class PollVotesController extends PollsAppController {
 		}
 		$this->set('pollVote', $this->PollVote->read(null, $id));
 	}
+	
+/** 
+ * vote method
+ * 
+ * @param string
+ * @param mixed
+ * @return array
+ */
+	public function vote($model = null, $foreignKey = null) {
+		$id = $this->PollVote->Poll->field('id', array('Poll.model' => $model, 'Poll.foreign_key' => $foreignKey));
+		
+		if (!empty($id)) {
+			return $this->add($id);
+		} else {
+			return null;
+		}
+	}
+	
+/**
+ * results method
+ *
+ * @param string
+ * @param mixed
+ * @return array
+ */
+ 	public function results($model = null, $foreignKey = null) {
+		$poll = $this->PollVote->Poll->find('first', array(
+			'conditions' => array(
+				'Poll.model' => $model,
+				'Poll.foreign_key' => $foreignKey,
+				),
+			'contain' => array(
+				'PollOption' => array(
+					'PollVote' => array(
+						'User',
+						),
+					),
+				),
+			));
+		
+		return compact('poll');
+	}
+	
 
 /**
  * add method
@@ -62,8 +111,10 @@ class PollVotesController extends PollsAppController {
 				$this->PollVote->create();
 				$this->PollVote->add($this->request->data);
 				$this->Session->setFlash(__('The poll vote has been saved'));
+				$this->redirect($this->referer());
 			} catch (Exception $e) {
 				$this->Session->setFlash($e->getMessage());
+				$this->redirect($this->referer());
 			}
 		}
 		if (CakeSession::read('Auth.User.id') != '') {
@@ -84,7 +135,9 @@ class PollVotesController extends PollsAppController {
 					),
 				));
 			$voteTotal = array_sum(Set::extract('/PollOption/vote_count', $votes));
-			$this->set(compact('votes', 'voteTotal'));
+		} else {
+			$votes = null;
+			$voteTotal = null;
 		}
 		
 		$poll = $this->PollVote->Poll->find('first', array(
@@ -98,7 +151,12 @@ class PollVotesController extends PollsAppController {
 				),
 			));
 		$user = CakeSession::read('Auth.User.id');
-		$this->set(compact('poll', 'user', 'pollOptions'));
+		
+		if (!empty($this->request->params['requested'])) {
+			return compact('poll', 'user', 'pollOptions', 'votes', 'voteTotal'); // for requestAction
+		} else {
+			$this->set(compact('poll', 'user', 'pollOptions', 'votes', 'voteTotal'));
+		}
 	}
 
 /**

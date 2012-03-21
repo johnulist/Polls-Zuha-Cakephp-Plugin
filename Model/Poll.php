@@ -53,7 +53,7 @@ class Poll extends PollsAppModel {
 			'counterQuery' => 'vote_count'
 		),
 		'PollVote' => array(
-			'className' => 'PollVote',
+			'className' => 'Polls.PollVote',
 			'foreignKey' => 'poll_id',
 			'dependent' => false,
 			'conditions' => '',
